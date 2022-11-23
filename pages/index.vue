@@ -7,13 +7,13 @@
         <v-list class="py-0" two-line>
           <v-list-item-group v-model="selected" active-class="green--text">
             <template v-for="(item, index) in items">
-              <v-list-item :key="item.title">
+              <v-list-item :key="item.wsm_recipient" @click="loadCoversation(item)">
                 <template>
                   <v-list-item-content>
-                    <v-list-item-title v-text="item.title"></v-list-item-title>
+                    <v-list-item-title v-text="item.wsm_recipient"></v-list-item-title>
 
                     <v-list-item-subtitle
-                      v-text="item.subtitle"
+                      v-text="item.wsm_body"
                     ></v-list-item-subtitle>
                   </v-list-item-content>
                 </template>
@@ -40,24 +40,24 @@
             :class="[
               'pa-1',
               'd-flex',
-              { 'justify-start': !message.outgoing },
-              { 'justify-end': message.outgoing },
+              { 'justify-start': !message.wsm_outbound },
+              { 'justify-end': message.wsm_outbound },
             ]"
           >
             <v-card
               class="pa-2 ma-2 message-card"
-              :color="message.outgoing ? 'green accent-1' : 'white'"
+              :color="message.wsm_outbound ? 'green accent-1' : 'white'"
             >
               <div>
-                <div>{{ message.body }}</div>
+                <div>{{ message.wsm_body }}</div>
                 <p class="text-right text-subtitle-2 font-italic">
                   {{ message.created_at }}
                   <v-icon
                     v-bind="attrs"
-                    :color="formatReadStatus(message.status).color"
+                    :color="formatReadStatus(message.wsm_status).color"
                     small
                     v-on="on"
-                    >{{ formatReadStatus(message.status).icon }}</v-icon
+                    >{{ formatReadStatus(message.wsm_status).icon }}</v-icon
                   >
                 </p>
               </div>
@@ -93,87 +93,97 @@ export default {
     selected: [2],
     items: [
       {
-        subtitle: `I'll be in your neighborhood doing errands this weekend. Do you want to hang out?`,
-        title: 'Ali Connors',
+        wsm_body: `I'll be in your neighborhood doing errands this weekend. Do you want to hang out?`,
+        wsm_recipient: 'Ali Connors',
       },
       {
-        subtitle: `Wish I could come, but I'm out of town this weekend.`,
-        title: 'Jennifer',
+        wsm_body: `Wish I could come, but I'm out of town this weekend.`,
+        wsm_recipient: 'Jennifer',
       },
       {
-        subtitle: 'Do you have Paris recommendations? Have you ever been?',
-        title: 'Sandra Adams',
-      },
-      {
-        subtitle:
-          'Have any ideas about what we should get Heidi for her birthday?',
-        title: 'Trevor Hansen',
-      },
-      {
-        subtitle:
+        wsm_body:
           'We should eat this: Grate, Squash, Corn, and tomatillo Tacos.',
-        title: 'Britta Holt',
-      },
-      {
-        subtitle: `I'll be in your neighborhood doing errands this weekend. Do you want to hang out?`,
-        title: 'Ali Connors',
-      },
-      {
-        subtitle: `Wish I could come, but I'm out of town this weekend.`,
-        title: 'Jennifer',
-      },
-      {
-        subtitle: 'Do you have Paris recommendations? Have you ever been?',
-        title: 'Sandra Adams',
-      },
-      {
-        subtitle:
-          'Have any ideas about what we should get Heidi for her birthday?',
-        title: 'Trevor Hansen',
-      },
-      {
-        subtitle:
-          'We should eat this: Grate, Squash, Corn, and tomatillo Tacos.',
-        title: 'Britta Holt',
+        wsm_recipient: 'Britta Holt',
       },
     ],
     messages: [
       {
-        outgoing: false,
-        body: 'Nunc tellus magna, volutpat vel orci eu, venenatis vestibulum magna. Morbi fermentum, purus laoreet egestas maximus, metus ex bibendum nulla, in posuere nunc neque id nulla.',
+        wsm_outbound: false,
+        wsm_body: 'Nunc tellus magna, volutpat vel orci eu, venenatis vestibulum magna. Morbi fermentum, purus laoreet egestas maximus, metus ex bibendum nulla, in posuere nunc neque id nulla.',
         created_at: '05/02/2022',
-        status: 'sent',
+        wsm_status: 'sent',
       },
       {
-        outgoing: true,
-        body: 'estibulum pellentesque maximus lacus, quis viverra justo pharetra sed. Curabitur tempus consequat dolor, ut gravida dui pulvinar eget.',
+        wsm_outbound: true,
+        wsm_body: 'estibulum pellentesque maximus lacus, quis viverra justo pharetra sed. Curabitur tempus consequat dolor, ut gravida dui pulvinar eget.',
         created_at: '05/02/2022',
-        status: 'read',
+        wsm_status: 'read',
       },
       {
-        outgoing: false,
-        body: 'Nulla id eros consequat purus interdum iaculis quis ut orci. Mauris dapibus turpis sit amet egestas consectetur. ',
+        wsm_outbound: false,
+        wsm_body: 'Nulla id eros consequat purus interdum iaculis quis ut orci. Mauris dapibus turpis sit amet egestas consectetur. ',
         created_at: '05/02/2022',
-        status: 'sent',
+        wsm_status: 'sent',
       },
       {
-        outgoing: true,
-        body: 'estibulum pellentesque maximus lacus, quis viverra justo pharetra sed. Curabitur tempus consequat dolor, ut gravida dui pulvinar eget.',
+        wsm_outbound: true,
+        wsm_body: 'estibulum pellentesque maximus lacus, quis viverra justo pharetra sed. Curabitur tempus consequat dolor, ut gravida dui pulvinar eget.',
         created_at: '05/02/2022',
-        status: 'delivered',
+        wsm_status: 'delivered',
       },
     ],
     message: '',
+    selectedConversation: {},
   }),
+  created(){
+    this.loadMessages();
+  },
   methods: {
-    sendMessage() {
-      this.messages.push({
-        outgoing: true,
-        body: this.message,
-        created_at: this.$moment().format('L'),
-        status: 'sent',
-      })
-      this.message = ''
+    async loadMessages(){
+      await this.$axios.get('/messages').then(({data}) => {
+        this.items = data.data;
+
+        console.log(data);
+      });
+    },
+    async loadCoversation(chat){
+      this.selectedConversation = chat;
+      await this.$axios.get('/messages/'+chat.wsm_recipient).then(({data}) => {
+        this.messages = data.data;
+        this.scrollToBottom();
+        console.log(data);
+      });
+    },
+    async sendMessage() {
+      const payload ={
+        wsm_body: this.message,
+        wsm_recipient:  this.selectedConversation.wsm_recipient,
+        number_id: '107160942162205',
+      }
+      await this.$axios.post('/messages', payload).then(({data}) => {
+        this.messages.push({
+          wsm_outbound: data.data.wsm_outbound,
+          wsm_body: data.data.wsm_body,
+          created_at: this.$moment(data.data.created_at).format('YYYY/MM/DD hh:mm'),
+          status: data.data.wsm_status,
+      });
+        console.log(data);
+        this.message = '';
+        this.scrollToBottom();
+
+      }).catch(error=>{
+        console.log(error);
+      });
+
+    },
+    scrollToBottom() {
+      setTimeout(() => {
+        const container = this.$el.querySelector('.chat-box');
+        if (container?.scrollHeight) {
+          container.scrollTop = container.scrollHeight;
+        };
+
+      }, 100);
     },
     formatReadStatus(status) {
       const statuses = {
@@ -200,7 +210,7 @@ export default {
           icon: 'mdi-alert-circle',
           // tooltip: $t('chat.msgFailed'),
           tooltip: 'Failed',
-        },
+        }
       }
 
       if (statuses?.[status]) {
@@ -213,7 +223,7 @@ export default {
         }
       }
     },
-  },
+  }
 }
 </script>
 
