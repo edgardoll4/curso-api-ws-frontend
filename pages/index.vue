@@ -88,6 +88,9 @@
 </template>
 
 <script>
+import Echo from 'laravel-echo';
+import Vue from 'vue';
+window.Pusher = require('pusher-js');
 export default {
   data: () => ({
     selected: [2],
@@ -138,7 +141,39 @@ export default {
   created(){
     this.loadMessages();
   },
+  mounted() {
+    window.Echo = new Echo({
+      broadcaster: 'pusher',
+      key: process.env.pusherAppKey,
+      cluster: process.env.pusherCluster,
+      forceTLS: true,
+    });
+    window.Echo.channel('webhooks').listen('Webhook', (res) => {
+      const message = res?.message;
+      const change = res?.change;
+      // console.log(this.selectedConversation?.wsm_recipient);
+      console.log(message,change);
+      if (this.selectedConversation?.wsm_recipient === message.wsm_recipient){
+        if (change === false ){
+          this.addMessage(message);
+          this.scrollToBottom();
+        }else{
+          const msgIndex = this.messages.findIndex((m) => m?.wsm_id === message.wsm_id);
+          if (msgIndex !== -1){
+            Vue.set(this.messages,msgIndex, message);
+          }
+        }
+        this.addMessage(message);
+        this.scrollToBottom();
+      }
+    });
+  },
   methods: {
+    addMessage(message){
+      this.messages.push(message);
+      // this.messages = this.messages.concat(message);
+      
+    },
     async loadMessages(){
       await this.$axios.get('/messages').then(({data}) => {
         this.items = data.data;
@@ -166,6 +201,7 @@ export default {
           wsm_body: data.data.wsm_body,
           created_at: this.$moment(data.data.created_at).format('YYYY/MM/DD hh:mm'),
           status: data.data.wsm_status,
+          wsm_id: data.data.wsm_id,
       });
         console.log(data);
         this.message = '';

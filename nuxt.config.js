@@ -28,6 +28,12 @@ export default {
     // Global CSS: https://go.nuxtjs.dev/config-css
     css: [],
 
+
+    env: {
+        pusherAppKey: process.env.PUSHER_APP_KEY || '5850a9989a62732bc23f',
+        pusherAppCluster: process.env.PUSHER_APP_CLUSTER || 'mt1',
+    },
+
     // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
     plugins: [],
 
