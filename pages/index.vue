@@ -49,7 +49,11 @@
               :color="message.wsm_outbound ? 'green accent-1' : 'white'"
             >
               <div>
-                <div>{{ message.wsm_body }}</div>
+                <div v-if = "message.wsm_type == 'text'">{{ message.wsm_body }}</div>
+                <div v-else-if = "message.wsm_type == 'image'"><img :src="message.wsm_body" class=" img-msg "/><p>{{message.wsm_caption}}</p></div>
+                <div v-else-if = "message.wsm_type == 'audio'"><audio controls><source :src="message.wsm_body" type="audio/ogg"></audio></div>
+                <div v-else-if = "message.wsm_type == 'video'"><video controls width="320" height="240"><source :src="message.wsm_body" type="video/mp4"></video></div>
+
                 <p class="text-right text-subtitle-2 font-italic">
                   {{ message.created_at }}
                   <v-icon
@@ -152,7 +156,7 @@ export default {
       const message = res?.message;
       const change = res?.change;
       // console.log(this.selectedConversation?.wsm_recipient);
-      console.log(message,change);
+      // console.log(message,change);
       if (this.selectedConversation?.wsm_recipient === message.wsm_recipient){
         if (change === false ){
           this.addMessage(message);
@@ -172,13 +176,13 @@ export default {
     addMessage(message){
       this.messages.push(message);
       // this.messages = this.messages.concat(message);
-      
+
     },
     async loadMessages(){
       await this.$axios.get('/messages').then(({data}) => {
         this.items = data.data;
 
-        console.log(data);
+        // console.log(data);
       });
     },
     async loadCoversation(chat){
@@ -186,7 +190,7 @@ export default {
       await this.$axios.get('/messages/'+chat.wsm_recipient).then(({data}) => {
         this.messages = data.data;
         this.scrollToBottom();
-        console.log(data);
+        // console.log(data);
       });
     },
     async sendMessage() {
@@ -203,7 +207,7 @@ export default {
           status: data.data.wsm_status,
           wsm_id: data.data.wsm_id,
       });
-        console.log(data);
+        // console.log(data);
         this.message = '';
         this.scrollToBottom();
 
@@ -281,5 +285,8 @@ export default {
   background-image: url('/bg-whatsapp.png');
   background-repeat: repeat;
   border-color: #efeae2;
+}
+.img-msg{
+  max-width:300px;
 }
 </style>
