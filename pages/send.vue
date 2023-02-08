@@ -141,21 +141,19 @@ export default {
       })
     },
     send(){
-      console.log(this.template)
       this.sending=true;
       const payload={
         recipients:this.recipients,
-        // header_url:this.header_url,
-        // header_type:this.header_type,
-        // body_placeholders:this.body_placeholders,
+        header_url:this.header_url,
+        header_type:this.template.header?.format || null,
+        body_placeholders:this.body_placeholders,
         template_name:this.template.name,
         template_language:this.template.language,
       };
-      console.log(payload);
       this.$axios
         .post('/send-message-templates',payload)
         .then(({data})=>{
-          alert('Enviado...');
+          alert('Enviado...',{data});
         })
         .catch((error)=>{
           alert('Error en el envio...',error);

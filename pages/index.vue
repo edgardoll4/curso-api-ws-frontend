@@ -50,7 +50,11 @@
             >
               <div>
                 <div v-if = "message.wsm_type == 'text'">{{ message.wsm_body }}</div>
-                <div v-else-if = "message.wsm_type == 'image'"><img :src="message.wsm_body" class=" img-msg "/><p>{{message.wsm_caption}}</p></div>
+                <div v-if = "message.wsm_type == 'template'">
+                  <img v-if="checkHeaderImage(message)" :src="message.wsm_data.header_url" class="img-msg"/>
+                  <p class="pre-wrap" v-text="message.wsm_body"></p>
+                </div>
+                <div v-else-if = "message.wsm_type == 'image'"><img :src="message.wsm_body" class="img-msg"/><p>{{message.wsm_caption}}</p></div>
                 <div v-else-if = "message.wsm_type == 'audio'"><audio controls><source :src="message.wsm_body" type="audio/ogg"></audio></div>
                 <div v-else-if = "message.wsm_type == 'video'"><video controls width="320" height="240"><source :src="message.wsm_body" type="video/mp4"></video></div>
 
@@ -124,18 +128,6 @@ export default {
         wsm_outbound: true,
         wsm_body: 'estibulum pellentesque maximus lacus, quis viverra justo pharetra sed. Curabitur tempus consequat dolor, ut gravida dui pulvinar eget.',
         created_at: '05/02/2022',
-        wsm_status: 'read',
-      },
-      {
-        wsm_outbound: false,
-        wsm_body: 'Nulla id eros consequat purus interdum iaculis quis ut orci. Mauris dapibus turpis sit amet egestas consectetur. ',
-        created_at: '05/02/2022',
-        wsm_status: 'sent',
-      },
-      {
-        wsm_outbound: true,
-        wsm_body: 'estibulum pellentesque maximus lacus, quis viverra justo pharetra sed. Curabitur tempus consequat dolor, ut gravida dui pulvinar eget.',
-        created_at: '05/02/2022',
         wsm_status: 'delivered',
       },
     ],
@@ -173,6 +165,10 @@ export default {
     });
   },
   methods: {
+    checkHeaderImage(message){
+      console.log(message);
+      return message.wsm_data?.header_type ==='IMAGE';
+    },
     addMessage(message){
       this.messages.push(message);
       // this.messages = this.messages.concat(message);
@@ -190,7 +186,7 @@ export default {
       await this.$axios.get('/messages/'+chat.wsm_recipient).then(({data}) => {
         this.messages = data.data;
         this.scrollToBottom();
-        // console.log(data);
+        console.log(data);
       });
     },
     async sendMessage() {
