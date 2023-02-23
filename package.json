@@ -29,5 +29,9 @@
         "laravel-echo": "^1.14.2",
         "prettier": "^2.3.2",
         "pusher-js": "^7.5.0"
+    },
+    "engines": {
+        "node": "16.14.2",
+        "npm": "8.5.0"
     }
 }
